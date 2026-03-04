@@ -1,3 +1,7 @@
-[submodule "simple-http-file-server"]
-	path = simple-server
-	url = https://github.com/amarseillaise/simple-http-file-server.git
+[submodule "telereel-fileserver"]
+	path = telereel-fileserver
+	url = https://github.com/amarseillaise/telereel-simple-http-file-server.git
+[submodule "telereel-bot"]
+	path = telereel-bot
+	url = https://github.com/amarseillaise/telereel-bot.git
+	branch = dev
