@@ -1,0 +1,3 @@
+[submodule "simple-http-file-server"]
+	path = simple-server
+	url = https://github.com/amarseillaise/simple-http-file-server.git
