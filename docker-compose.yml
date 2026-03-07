@@ -23,7 +23,7 @@ services:
           cpus: "0.5"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:${SERVER_PORT}/health"]
-      interval: 30s
+      interval: 60m
       timeout: 10s
       retries: 3
       start_period: 1h
