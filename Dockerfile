@@ -24,7 +24,7 @@ COPY telereel-bot/main.go ./
 COPY telereel-bot/bot/ ./bot/
 COPY telereel-bot/services/ ./services/
 
-RUN go build -o bot main.go
+RUN go build -o /app/bin/bot main.go
 
 # ── Target: fileserver runtime ────────────────────────────────────────
 FROM alpine:latest AS fileserver
@@ -57,6 +57,6 @@ RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder-bot /app/bot .
+COPY --from=builder-bot /app/bin/bot .
 
 CMD ["./bot"]
