@@ -4,4 +4,3 @@
 [submodule "telereel-bot"]
 	path = telereel-bot
 	url = https://github.com/amarseillaise/telereel-bot.git
-	branch = dev
