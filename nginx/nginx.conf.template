@@ -31,10 +31,41 @@ http {
     limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
     limit_req_status 429;
 
+    # --- Block scanners: known bad user agents ---
+    map $http_user_agent $is_bad_agent {
+        default 0;
+        "~*FreePBX-Scanner"     1;
+        "~*CMS-Checker"         1;
+        "~*libredtail"          1;
+        "~*nvdorz"              1;
+        "~*xfa1"                1;
+        "~*masscan"             1;
+        "~*zgrab"               1;
+        "~*Nuclei"              1;
+        "~*sqlmap"              1;
+        "~*nikto"               1;
+        "~*dirbuster"           1;
+        "~*gobuster"            1;
+        "~*nmap"                1;
+    }
+
     # --- Upstream (Go application) ---
     upstream app_backend {
         server app:${SERVER_PORT};
         keepalive 32;
+    }
+
+    # --- Default server: drop requests without valid Host ---
+    server {
+        listen 80 default_server;
+        listen 443 ssl default_server http2;
+        server_name _;
+
+        ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+
+        access_log off;
+        return 444;
     }
 
     # --- HTTP server (ACME challenge + redirect) ---
@@ -50,6 +81,11 @@ http {
         location /health {
             proxy_pass http://app_backend/health;
             access_log off;
+        }
+
+        # Block bad user agents
+        if ($is_bad_agent) {
+            return 444;
         }
 
         location / {
@@ -88,6 +124,27 @@ http {
         add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Content-Security-Policy "default-src 'self'" always;
+
+        # --- Block bad user agents ---
+        if ($is_bad_agent) {
+            return 444;
+        }
+
+        # --- Block common scanner paths (dotfiles, PHP, cgi-bin) ---
+        location ~ /\. {
+            access_log off;
+            return 444;
+        }
+
+        location ~* \.(php|cgi|asp|aspx|jsp)$ {
+            access_log off;
+            return 444;
+        }
+
+        location ~* ^/(cgi-bin|vendor|phpunit|admin|wp-|wordpress|backup|blog|cms|panel) {
+            access_log off;
+            return 444;
+        }
 
         # --- Health check (no rate limit, no logging) ---
         location = /health {
